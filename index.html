@@ -15,7 +15,10 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300&family=Jost:wght@300;400&display=swap" rel="stylesheet">
 
-<link rel="stylesheet" href="assets/styles.css">
+<!-- ?v= : cache-busting. Après une modif du CSS/JS, incrémente ce
+     numéro (ici et sur app.js plus bas) pour forcer les téléphones à
+     recharger. Même valeur aux deux endroits. -->
+<link rel="stylesheet" href="assets/styles.css?v=1">
 </head>
 <body>
 
@@ -123,6 +126,6 @@
 
 </main>
 
-<script src="assets/app.js"></script>
+<script src="assets/app.js?v=1"></script>
 </body>
 </html>
