@@ -1,0 +1,128 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0C0B09">
+<title>Titre de l'œuvre — Château de la Colle Noire</title>
+
+<meta property="og:title" content="Titre de l'œuvre">
+<meta property="og:description" content="Un film de [Réalisateur]. Château de la Colle Noire.">
+<meta property="og:type" content="video.other">
+<meta property="og:image" content="film/poster.jpg">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300&family=Jost:wght@300;400&display=swap" rel="stylesheet">
+
+<link rel="stylesheet" href="assets/styles.css">
+</head>
+<body>
+
+<div class="scrim" aria-hidden="true"></div>
+
+<img class="mark" src="assets/dior.png" alt="Dior" width="60" height="14">
+
+<button class="lang" id="lang" type="button" aria-label="Switch to English">
+  <span class="lang__on">FR</span><span class="lang__sep">/</span><span class="lang__off">EN</span>
+</button>
+
+<main class="scroll" id="scroll">
+
+  <!-- ── Section 1 : l'œuvre ─────────────────────────────────── -->
+  <section class="stage" id="stage">
+    <div class="stage__inner">
+
+      <h1 class="title" data-i18n="title">Titre de l'œuvre</h1>
+
+      <div class="player" id="player">
+        <video
+          id="film"
+          class="player__video"
+          playsinline
+          preload="metadata"
+          poster="film/poster.jpg"
+          controls>
+          <source src="film/film.mp4" type='video/mp4; codecs="avc1.640028"'>
+          <!-- Un seul fichier suffit : le H.264 se lit partout.
+               Si un jour un appareil fait la fine bouche, ajoute ici :
+               <source src="film/film.webm" type="video/webm"> -->
+        </video>
+
+        <button class="player__poster" id="playBtn" type="button" data-i18n-aria="play" aria-label="Lire le film">
+          <span class="player__ring"><span class="player__tri"></span></span>
+        </button>
+
+        <div class="player__bar" id="bar">
+          <button class="ctl" id="toggle" type="button" data-i18n-aria="pause" aria-label="Pause">
+            <svg viewBox="0 0 16 16" class="ico ico--pause" aria-hidden="true"><rect x="4" y="2.5" width="2.5" height="11"/><rect x="9.5" y="2.5" width="2.5" height="11"/></svg>
+            <svg viewBox="0 0 16 16" class="ico ico--play" aria-hidden="true"><path d="M4 2.5 13 8 4 13.5Z"/></svg>
+          </button>
+
+          <span class="time" id="cur">0:00</span>
+
+          <input class="seek" id="seek" type="range" min="0" max="1000" value="0" step="1"
+                 data-i18n-aria="seek" aria-label="Position dans le film">
+
+          <span class="time time--dur" id="dur">0:00</span>
+
+          <button class="ctl" id="mute" type="button" data-i18n-aria="mute" aria-label="Couper le son">
+            <svg viewBox="0 0 16 16" class="ico ico--vol" aria-hidden="true"><path d="M3 6h2.5L9 3v10L5.5 10H3Z"/><path d="M11 5.5a3.5 3.5 0 0 1 0 5" fill="none" stroke="currentColor" stroke-width="1.2"/></svg>
+            <svg viewBox="0 0 16 16" class="ico ico--muted" aria-hidden="true"><path d="M3 6h2.5L9 3v10L5.5 10H3Z"/><path d="m11 6 4 4m0-4-4 4" fill="none" stroke="currentColor" stroke-width="1.2"/></svg>
+          </button>
+
+          <button class="ctl" id="full" type="button" data-i18n-aria="full" aria-label="Plein écran">
+            <svg viewBox="0 0 16 16" class="ico" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.2"><path d="M2 6V2h4M14 6V2h-4M2 10v4h4M14 10v4h-4"/></svg>
+          </button>
+        </div>
+      </div>
+
+      <!-- Cartel -->
+      <div class="cartel">
+        <p class="cartel__artist" data-i18n="artist">Prénom Nom</p>
+        <p class="cartel__meta" data-i18n="meta">2026</p>
+        <p class="cartel__spec" data-i18n="spec">Film, couleur, son — 4:32</p>
+      </div>
+
+    </div>
+
+    <div class="cue" id="cue" aria-hidden="true">
+      <span class="cue__line"></span>
+    </div>
+  </section>
+
+  <!-- ── Section 2 : le contexte ─────────────────────────────── -->
+  <section class="context" id="context">
+    <div class="context__inner" id="contextInner">
+
+      <div class="prose">
+        <p data-i18n="p1">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.</p>
+        <p data-i18n="p2">Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>
+      </div>
+
+      <details class="credits">
+        <summary class="credits__head">
+          <span data-i18n="creditsLabel">Générique</span>
+          <span class="credits__plus" aria-hidden="true"></span>
+        </summary>
+        <div class="credits__body">
+          <dl class="credits__list">
+            <dt data-i18n="cRole1">Œuvre</dt>       <dd data-i18n="cName1">Prénom Nom</dd>
+            <dt data-i18n="cRole2">Film</dt>        <dd data-i18n="cName2">Prénom Nom</dd>
+            <dt data-i18n="cRole3">Image</dt>       <dd data-i18n="cName3">Prénom Nom</dd>
+            <dt data-i18n="cRole4">Montage</dt>     <dd data-i18n="cName4">Prénom Nom</dd>
+            <dt data-i18n="cRole5">Son</dt>         <dd data-i18n="cName5">Prénom Nom</dd>
+            <dt data-i18n="cRole6">Production</dt>  <dd data-i18n="cName6">Prénom Nom</dd>
+            <dt data-i18n="cRole7">Lieu</dt>        <dd data-i18n="cName7">Château de la Colle Noire, Montauroux</dd>
+          </dl>
+        </div>
+      </details>
+
+    </div>
+  </section>
+
+</main>
+
+<script src="assets/app.js"></script>
+</body>
+</html>

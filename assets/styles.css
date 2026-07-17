@@ -1,0 +1,454 @@
+/* ─────────────────────────────────────────────────────────────
+   Colle Noire — page cartel
+   Tweakables live in :root. Everything else follows from them.
+   ───────────────────────────────────────────────────────────── */
+
+:root {
+  --noir:        #0C0B09;   /* fond, noir chaud */
+  --noir-lift:   #131110;   /* surfaces légèrement levées */
+  --ivory:       #EFEAE1;   /* texte principal */
+  --ivory-soft:  #B7B0A5;   /* texte secondaire */
+  --ivory-faint: #6E685E;   /* mentions */
+  --hairline:    rgba(239, 234, 225, 0.14);
+
+  --serif: "Cormorant Garamond", "Didot", "Bodoni 72", Georgia, serif;
+  --sans:  "Jost", "Futura", "Avenir Next", system-ui, sans-serif;
+
+  /* Rapport du film. Le tien est « presque 1:1 » — ajuste ici. */
+  --film-ratio: 1 / 1;
+
+  /* Opacité du texte de contexte avant révélation. */
+  --veil: 0.16;
+
+  /* Hauteur du logo Dior. */
+  --mark-h: 3rem;
+
+  --ease: cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+html { background: var(--noir); }
+
+body {
+  background: var(--noir);
+  color: var(--ivory);
+  font-family: var(--sans);
+  font-weight: 300;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  overscroll-behavior-y: none;
+}
+
+/* ── Défilement + accroche ──────────────────────────────────── */
+
+.scroll {
+  height: 100svh;
+  overflow-y: auto;
+  scroll-snap-type: y mandatory;   /* soit le film, soit le texte — jamais entre les deux */
+  scroll-behavior: smooth;
+}
+
+/* Garde-fou : une section plus haute que l'écran ne peut pas se lire
+   sous un snap obligatoire — le bas devient inatteignable. Dès que le
+   texte déborde (générique ouvert, petit écran), on relâche. Posé par
+   app.js, qui mesure. */
+.scroll.is-loose { scroll-snap-type: y proximity; }
+
+.stage,
+.context {
+  scroll-snap-align: start;
+  min-height: 100svh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  padding: clamp(2rem, 6vh, 4rem) clamp(1.25rem, 5vw, 3rem);
+}
+
+/* ── Section 1 ──────────────────────────────────────────────── */
+
+.stage__inner {
+  width: min(100%, 34rem);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: clamp(1.5rem, 4vh, 2.5rem);
+}
+
+.title {
+  font-family: var(--serif);
+  font-weight: 300;
+  font-size: clamp(2rem, 7vw, 3.25rem);
+  line-height: 1.08;
+  letter-spacing: 0.02em;
+  text-align: center;
+  text-wrap: balance;
+}
+
+/* ── Lecteur ────────────────────────────────────────────────── */
+
+.player {
+  position: relative;
+  width: 100%;
+  aspect-ratio: var(--film-ratio);
+  background: #000;
+  overflow: hidden;
+  isolation: isolate;
+}
+
+.player__video {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  display: block;
+  background: #000;
+}
+
+/* Sans JS, on garde les contrôles natifs. Avec JS, on prend la main. */
+.js .player__video::-webkit-media-controls { display: none !important; }
+
+/* Affiche + bouton de lecture */
+.player__poster {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+  z-index: 2;
+  transition: opacity 0.6s var(--ease);
+}
+.player__poster::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse at center, rgba(0,0,0,0.25), rgba(0,0,0,0.55));
+}
+.player.is-playing .player__poster,
+.player.is-started .player__poster { opacity: 0; pointer-events: none; }
+
+.player__ring {
+  position: relative;
+  width: clamp(3.75rem, 14vw, 4.75rem);
+  aspect-ratio: 1;
+  border: 1px solid rgba(239, 234, 225, 0.65);
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  transition: border-color 0.4s var(--ease), transform 0.4s var(--ease), background-color 0.4s var(--ease);
+}
+.player__poster:hover .player__ring {
+  border-color: var(--ivory);
+  background: rgba(239, 234, 225, 0.06);
+  transform: scale(1.05);
+}
+.player__tri {
+  width: 0; height: 0;
+  margin-left: 0.2em;
+  border-left: 0.9rem solid var(--ivory);
+  border-top: 0.55rem solid transparent;
+  border-bottom: 0.55rem solid transparent;
+}
+
+/* Barre de contrôle */
+.player__bar {
+  position: absolute;
+  left: 0; right: 0; bottom: 0;
+  z-index: 3;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 2.5rem 0.9rem 0.75rem;
+  background: linear-gradient(to top, rgba(0,0,0,0.72), rgba(0,0,0,0));
+  opacity: 0;
+  pointer-events: none;   /* toujours : le dégradé est une grande boîte
+                             invisible, il ne doit jamais avaler un tap
+                             destiné au film. Seuls les boutons répondent. */
+  transition: opacity 0.35s var(--ease);
+}
+.player.is-started.show-bar .player__bar { opacity: 1; }
+.player.is-started.show-bar .player__bar > * { pointer-events: auto; }
+
+.ctl {
+  flex: none;
+  width: 1.75rem; height: 1.75rem;
+  display: grid;
+  place-items: center;
+  border: 0;
+  background: transparent;
+  color: var(--ivory);
+  cursor: pointer;
+  opacity: 0.85;
+  transition: opacity 0.25s var(--ease);
+}
+.ctl:hover { opacity: 1; }
+.ico { width: 0.95rem; height: 0.95rem; fill: currentColor; }
+
+.ico--play, .player.is-paused .ico--pause { display: none; }
+.player.is-paused .ico--play { display: block; }
+
+.ico--muted, .player.is-muted .ico--vol { display: none; }
+.player.is-muted .ico--muted { display: block; }
+
+.time {
+  flex: none;
+  font-size: 0.6875rem;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.06em;
+  color: var(--ivory-soft);
+}
+.time--dur { color: var(--ivory-faint); }
+
+/* Piste de lecture */
+.seek {
+  flex: 1;
+  min-width: 0;
+  height: 1.5rem;
+  -webkit-appearance: none;
+  appearance: none;
+  background: transparent;
+  cursor: pointer;
+}
+.seek::-webkit-slider-runnable-track {
+  height: 1px;
+  background: linear-gradient(to right, var(--ivory) var(--pct, 0%), rgba(239,234,225,0.28) var(--pct, 0%));
+}
+.seek::-moz-range-track {
+  height: 1px;
+  background: linear-gradient(to right, var(--ivory) var(--pct, 0%), rgba(239,234,225,0.28) var(--pct, 0%));
+}
+.seek::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 9px; height: 9px;
+  margin-top: -4px;
+  border: 0;
+  border-radius: 50%;
+  background: var(--ivory);
+  transition: transform 0.2s var(--ease);
+}
+.seek::-moz-range-thumb {
+  width: 9px; height: 9px;
+  border: 0;
+  border-radius: 50%;
+  background: var(--ivory);
+}
+.seek:hover::-webkit-slider-thumb { transform: scale(1.3); }
+.seek:focus-visible { outline: none; }
+.seek:focus-visible::-webkit-slider-thumb { box-shadow: 0 0 0 4px rgba(239,234,225,0.25); }
+
+/* ── Cartel ─────────────────────────────────────────────────── */
+
+.cartel { text-align: center; }
+
+.cartel__artist {
+  font-family: var(--serif);
+  font-style: italic;
+  font-weight: 300;
+  font-size: 1.0625rem;
+  letter-spacing: 0.03em;
+  color: var(--ivory);
+}
+.cartel__meta {
+  margin-top: 0.4rem;
+  font-size: 0.6875rem;
+  font-weight: 300;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--ivory-soft);
+}
+.cartel__spec {
+  margin-top: 0.3rem;
+  font-size: 0.6875rem;
+  letter-spacing: 0.08em;
+  color: var(--ivory-faint);
+}
+
+/* ── Invite à défiler ───────────────────────────────────────── */
+
+.cue {
+  position: absolute;
+  bottom: clamp(1rem, 3vh, 2rem);
+  left: 50%;
+  transform: translateX(-50%);
+  transition: opacity 0.5s var(--ease);
+}
+.cue.is-gone { opacity: 0; }
+.cue__line {
+  display: block;
+  width: 1px;
+  height: 2.25rem;
+  background: linear-gradient(to bottom, rgba(239,234,225,0), rgba(239,234,225,0.5));
+  animation: drift 2.8s var(--ease) infinite;
+}
+@keyframes drift {
+  0%, 100% { transform: translateY(-25%) scaleY(0.7); opacity: 0.35; }
+  50%      { transform: translateY(0)     scaleY(1);   opacity: 1; }
+}
+
+/* ── Section 2 ──────────────────────────────────────────────── */
+
+.context__inner {
+  width: min(100%, 34rem);
+  opacity: var(--veil);
+  transform: translateY(0.75rem);
+  transition: opacity 1s var(--ease), transform 1s var(--ease);
+}
+.context__inner.is-revealed {
+  opacity: 1;
+  transform: none;
+}
+
+.prose {
+  display: flex;
+  flex-direction: column;
+  gap: 1.1em;
+}
+.prose p {
+  font-family: var(--serif);
+  font-size: clamp(1.0625rem, 2.4vw, 1.1875rem);
+  line-height: 1.65;
+  letter-spacing: 0.01em;
+  color: var(--ivory);
+  text-wrap: pretty;
+}
+
+/* ── Générique (accordéon) ──────────────────────────────────── */
+
+.credits {
+  margin-top: clamp(2.5rem, 7vh, 4rem);
+  border-top: 1px solid var(--hairline);
+}
+.credits__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1.1rem 0;
+  list-style: none;
+  cursor: pointer;
+  font-size: 0.6875rem;
+  font-weight: 300;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--ivory-soft);
+  transition: color 0.3s var(--ease);
+}
+.credits__head::-webkit-details-marker { display: none; }
+.credits__head:hover { color: var(--ivory); }
+
+/* Le « + » qui devient « − » */
+.credits__plus {
+  position: relative;
+  flex: none;
+  width: 0.6875rem; height: 0.6875rem;
+}
+.credits__plus::before,
+.credits__plus::after {
+  content: "";
+  position: absolute;
+  top: 50%; left: 0;
+  width: 100%; height: 1px;
+  background: currentColor;
+  transition: transform 0.4s var(--ease);
+}
+.credits__plus::after { transform: rotate(90deg); }
+.credits[open] .credits__plus::after { transform: rotate(0deg); }
+
+/* overflow caché : c'est ce qui rend la hauteur animable par app.js. */
+.credits__body {
+  padding-bottom: 1.5rem;
+  overflow: hidden;
+}
+
+.credits__list {
+  display: grid;
+  grid-template-columns: minmax(6rem, auto) 1fr;
+  gap: 0.55rem 1.5rem;
+  font-size: 0.8125rem;
+  line-height: 1.5;
+}
+.credits__list dt {
+  font-size: 0.625rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--ivory-faint);
+  padding-top: 0.15em;
+}
+.credits__list dd { color: var(--ivory-soft); }
+
+/* ── Voile d'en-tête ────────────────────────────────────────── */
+
+/* Un dégradé du noir de la page vers le transparent, posé derrière le
+   logo et le FR/EN. Le texte qui défile dessous s'y fond au lieu de
+   buter sur les mots. z-index sous les deux, sans capter les taps. */
+.scrim {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  height: clamp(4rem, 12vh, 6rem);
+  z-index: 9;
+  pointer-events: none;
+  background: linear-gradient(
+    to bottom,
+    var(--noir) 0%,
+    color-mix(in srgb, var(--noir) 55%, transparent) 55%,
+    transparent 100%);
+}
+
+/* ── Marque ─────────────────────────────────────────────────── */
+
+/* PNG blanc sur transparent. Sa hauteur est calée sur la hauteur d'œil
+   du FR/EN d'en face, pas sur sa hauteur de boîte : un logo à 10px de
+   haut ne se lit plus. Règle --mark-h en haut du fichier. */
+.mark {
+  position: fixed;
+  top: clamp(1rem, 3vh, 1.75rem);
+  left: clamp(1rem, 4vw, 1.75rem);
+  z-index: 10;
+  height: var(--mark-h);
+  margin-top: -15px;
+  width: auto;
+  display: block;
+  opacity: 0.9;
+}
+
+/* ── Bascule de langue ──────────────────────────────────────── */
+
+.lang {
+  position: fixed;
+  top: clamp(1rem, 3vh, 1.75rem);
+  right: clamp(1rem, 4vw, 1.75rem);
+  z-index: 10;
+  display: flex;
+  gap: 0.3em;
+  padding: 0.5rem;
+  margin: -0.5rem;
+  border: 0;
+  background: transparent;
+  color: var(--ivory);
+  font-family: var(--sans);
+  font-size: 0.625rem;
+  font-weight: 300;
+  letter-spacing: 0.16em;
+  cursor: pointer;
+}
+.lang__off { color: var(--ivory-faint); transition: color 0.3s var(--ease); }
+.lang__sep { color: var(--ivory-faint); }
+.lang:hover .lang__off { color: var(--ivory-soft); }
+
+/* ── Divers ─────────────────────────────────────────────────── */
+
+:focus-visible {
+  outline: 1px solid var(--ivory-soft);
+  outline-offset: 3px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+  .scroll { scroll-behavior: auto; }
+  .context__inner { opacity: 1; transform: none; }
+}
