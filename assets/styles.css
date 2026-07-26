@@ -304,6 +304,7 @@ body {
   display: flex;
   flex-direction: column;
   gap: 1.1em;
+  overflow: hidden;   /* rend la hauteur animable quand le générique s'ouvre */
 }
 .prose p {
   font-family: var(--serif);
@@ -312,6 +313,14 @@ body {
   letter-spacing: 0.01em;
   color: var(--ivory);
   text-wrap: pretty;
+}
+
+/* Repos, une fois le fondu terminé — évite qu'elle réapparaisse d'un
+   coup si l'animation (sans fill) revient à son état CSS de base. */
+.prose.is-hidden {
+  height: 0;
+  opacity: 0;
+  pointer-events: none;
 }
 
 /* ── Générique (accordéon) ──────────────────────────────────── */
@@ -354,6 +363,11 @@ body {
 }
 .credits__plus::after { transform: rotate(90deg); }
 .credits[open] .credits__plus::after { transform: rotate(0deg); }
+
+/* Avec JS, l'icône suit la classe posée au clic et non l'attribut open :
+   à la fermeture, celui-ci reste vrai le temps de l'animation. */
+.js .credits[open] .credits__plus::after   { transform: rotate(90deg); }
+.js .credits.is-open .credits__plus::after { transform: rotate(0deg); }
 
 /* overflow caché : c'est ce qui rend la hauteur animable par app.js. */
 .credits__body {
