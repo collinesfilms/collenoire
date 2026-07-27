@@ -20,6 +20,20 @@
   /* Opacité du texte de contexte avant révélation. */
   --veil: 0.16;
 
+  /* Hauteur maximale d'un bloc de texte défilable (le synopsis, le
+     générique). Au-delà, le texte défile dans son cadre au lieu de
+     pousser la section hors de l'écran — ce qui, sous une accroche
+     obligatoire, rendait son bas inatteignable.
+
+     Les 16rem retirés couvrent les marges de la section, l'en-tête du
+     générique, et la hauteur du voile d'en-tête : le bloc étant centré,
+     ce qu'on réserve en haut pour ne pas écrire sous le logo, on le
+     réserve aussi en bas. Descends cette valeur si le texte s'allonge. */
+  --pane-max: calc(100svh - 16rem);
+
+  /* Hauteur du dégradé qui signale qu'il reste du texte à lire. */
+  --pane-fade: 3.5rem;
+
   /* Hauteur du logo Dior. */
   --mark-h: 3rem;
 
@@ -300,11 +314,54 @@ body {
   transform: none;
 }
 
+/* ── Blocs de texte défilables ──────────────────────────────── */
+
+/* Un « pane » est un bloc qui préfère défiler plutôt que grandir. Son
+   parent .pane-wrap porte le dégradé de bas de cadre, allumé par app.js
+   tant qu'il reste quelque chose à lire dessous. */
+
+.pane {
+  max-height: var(--pane-max);
+  overflow-y: auto;
+
+  /* Arrivé en bas du texte, le geste ne doit pas se propager au
+     défilement de la page : on lirait la dernière ligne et la page
+     sauterait à la section suivante dans le même mouvement. */
+  overscroll-behavior: contain;
+
+  /* La barre native jurerait avec le reste ; le dégradé tient ce rôle. */
+  scrollbar-width: none;
+}
+.pane::-webkit-scrollbar { display: none; }
+
+.pane-wrap { position: relative; }
+
+.pane-wrap::after {
+  content: "";
+  position: absolute;
+  left: 0; right: 0; bottom: 0;
+  height: var(--pane-fade);
+  pointer-events: none;   /* le dégradé ne doit jamais avaler un geste */
+  opacity: 0;
+  transition: opacity 0.4s var(--ease);
+  background: linear-gradient(
+    to top,
+    var(--noir) 0%,
+    color-mix(in srgb, var(--noir) 55%, transparent) 55%,
+    transparent 100%);
+}
+/* Posé par app.js : il reste du texte sous le pli. En bas de course le
+   dégradé s'efface, et la dernière ligne se lit en clair. */
+.pane-wrap.has-more::after { opacity: 1; }
+
 .prose {
+  position: relative;
+  overflow: hidden;   /* rend la hauteur animable quand le générique s'ouvre */
+}
+.prose__pane {
   display: flex;
   flex-direction: column;
   gap: 1.1em;
-  overflow: hidden;   /* rend la hauteur animable quand le générique s'ouvre */
 }
 .prose p {
   font-family: var(--serif);

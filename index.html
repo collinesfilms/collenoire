@@ -7,9 +7,12 @@
 <title>Apparaître l'Arc-en-Ciel — Château de la Colle Noire</title>
 
 <meta property="og:title" content="Apparaître l'Arc-en-Ciel">
-<meta property="og:description" content="Un film d'Anna Giner. Château de la Colle Noire.">
+<meta property="og:description" content="Un film d'Anna Giner. Dans l'oliveraie du château de la Colle Noire, deux illusionnistes font surgir un arc-en-ciel.">
 <meta property="og:type" content="video.other">
-<meta property="og:image" content="film/poster.jpg">
+<meta property="og:url" content="https://collenoire.annaginer.com/">
+<!-- Les aperçus de lien (iMessage, WhatsApp, Facebook…) exigent une URL
+     absolue : un chemin relatif n'est pas résolu, l'image ne s'affiche pas. -->
+<meta property="og:image" content="https://collenoire.annaginer.com/film/poster.jpg">
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -18,7 +21,7 @@
 <!-- ?v= : cache-busting. Après une modif du CSS/JS, incrémente ce
      numéro (ici et sur app.js plus bas) pour forcer les téléphones à
      recharger. Même valeur aux deux endroits. -->
-<link rel="stylesheet" href="assets/styles.css?v=4">
+<link rel="stylesheet" href="assets/styles.css?v=5">
 </head>
 <body>
 
@@ -36,7 +39,10 @@
   <section class="stage" id="stage">
     <div class="stage__inner">
 
-      <h1 class="title" data-i18n="title">Titre de l'œuvre</h1>
+      <!-- Le texte de repli doit rester identique aux chaînes `fr` de
+           app.js : c'est lui que voient les robots d'indexation, les
+           aperçus de lien, et le visiteur si le JS ne se charge pas. -->
+      <h1 class="title" data-i18n="title">Apparaître l'Arc-en-Ciel</h1>
 
       <div class="player" id="player">
         <video
@@ -82,9 +88,9 @@
 
       <!-- Cartel -->
       <div class="cartel">
-        <p class="cartel__artist" data-i18n="artist">Prénom Nom</p>
+        <p class="cartel__artist" data-i18n="artist">Anna Giner</p>
         <p class="cartel__meta" data-i18n="meta">2026</p>
-        <p class="cartel__spec" data-i18n="spec">Film, couleur, son — 4:32</p>
+        <p class="cartel__spec" data-i18n="spec">Film, couleur, son — 4:52</p>
       </div>
 
     </div>
@@ -98,9 +104,14 @@
   <section class="context" id="context">
     <div class="context__inner" id="contextInner">
 
-      <div class="prose">
-        <p data-i18n="p1">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.</p>
-        <p data-i18n="p2">Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>
+      <!-- pane-wrap / pane : le texte défile dans son cadre quand l'écran
+           est trop court, au lieu de pousser la section hors de l'écran.
+           Le dégradé du bas est posé par le CSS sur .pane-wrap. -->
+      <div class="prose pane-wrap">
+        <div class="prose__pane pane" data-pane>
+          <p data-i18n="p1">Apparaître l'Arc-en-Ciel (2026) transforme l'oliveraie du château de la Colle Noire en un petit théâtre, où, sous les yeux d'un public émerveillé, deux illusionnistes font surgir un arc-en-ciel. Après le départ des visiteurs le phénomène réapparaît en pleine nuit, comme s'il retrouvait une existence propre, presque sauvage, à l'abri des regards humains.</p>
+          <p data-i18n="p2">Le film s'inspire d'études récentes pointant la raréfaction des conditions d'apparition des arcs-en-ciel en Europe méditerranéenne sous l'effet du réchauffement climatique. Il imagine un futur où le phénomène naturel serait devenu si rare qu'il ne pourrait plus être admiré qu'à l'occasion de spectacles qui lui seraient dédiés. Entre féérie et réflexion environnementale, le film interroge l'impact du changement climatique sur le paysage, nos émotions et notre imaginaire collectif.</p>
+        </div>
       </div>
 
       <details class="credits">
@@ -109,20 +120,24 @@
           <span class="credits__plus" aria-hidden="true"></span>
         </summary>
         <div class="credits__body">
-          <dl class="credits__list">
-            <dt data-i18n="cRole1">Réalisation</dt>              <dd data-i18n="cName1">Anna Giner</dd>
-            <dt data-i18n="cRole2">Avec</dt>                     <dd data-i18n="cName2">Kris Bole · Laëtitia Chaboche</dd>
-            <dt data-i18n="cRole3">Assistant réalisateur</dt>    <dd data-i18n="cName3">Édouard Licoys</dd>
-            <dt data-i18n="cRole4">Chef opérateur</dt>           <dd data-i18n="cName4">Adrian Cacciola</dd>
-            <dt data-i18n="cRole5">Assistante caméra</dt>        <dd data-i18n="cName5">Gaëlle Monfort</dd>
-            <dt data-i18n="cRole6">Chef machiniste</dt>          <dd data-i18n="cName6">Angel Manach</dd>
-            <dt data-i18n="cRole7">Ingénieur du son</dt>         <dd data-i18n="cName7">Gauthier Hammer</dd>
-            <dt data-i18n="cRole8">Montage</dt>                  <dd data-i18n="cName8">Anna Giner · Adrian Cacciola</dd>
-            <dt data-i18n="cRole9">Montage et mixage son</dt>    <dd data-i18n="cName9">Gauthier Hammer</dd>
-            <dt data-i18n="cRole10">Étalonnage et VFX</dt>       <dd data-i18n="cName10">Adrian Cacciola</dd>
-            <dt data-i18n="cRole11">Production</dt>              <dd data-i18n="cName11">Clément Château · Laurent Hopp</dd>
-            <dt data-i18n="cRole12">Lieu</dt>                    <dd data-i18n="cName12">Château de la Colle Noire, Montauroux</dd>
-          </dl>
+          <div class="pane-wrap">
+            <div class="credits__pane pane" data-pane>
+              <dl class="credits__list">
+                <dt data-i18n="cRole1">Réalisation</dt>              <dd data-i18n="cName1">Anna Giner</dd>
+                <dt data-i18n="cRole2">Avec</dt>                     <dd data-i18n="cName2">Kris Bole · Laëtitia Chaboche</dd>
+                <dt data-i18n="cRole3">Assistant réalisateur</dt>    <dd data-i18n="cName3">Édouard Licoys</dd>
+                <dt data-i18n="cRole4">Chef opérateur</dt>           <dd data-i18n="cName4">Adrian Cacciola</dd>
+                <dt data-i18n="cRole5">Assistante caméra</dt>        <dd data-i18n="cName5">Gaëlle Monfort</dd>
+                <dt data-i18n="cRole6">Chef machiniste</dt>          <dd data-i18n="cName6">Angel Manach</dd>
+                <dt data-i18n="cRole7">Ingénieur du son</dt>         <dd data-i18n="cName7">Gauthier Hammer</dd>
+                <dt data-i18n="cRole8">Montage</dt>                  <dd data-i18n="cName8">Anna Giner · Adrian Cacciola</dd>
+                <dt data-i18n="cRole9">Montage et mixage son</dt>    <dd data-i18n="cName9">Gauthier Hammer</dd>
+                <dt data-i18n="cRole10">Étalonnage et VFX</dt>       <dd data-i18n="cName10">Adrian Cacciola</dd>
+                <dt data-i18n="cRole11">Production</dt>              <dd data-i18n="cName11">Clément Château · Laurent Hopp</dd>
+                <dt data-i18n="cRole12">Lieu</dt>                    <dd data-i18n="cName12">Château de la Colle Noire, Montauroux</dd>
+              </dl>
+            </div>
+          </div>
         </div>
       </details>
 
@@ -131,6 +146,6 @@
 
 </main>
 
-<script src="assets/app.js?v=4"></script>
+<script src="assets/app.js?v=5"></script>
 </body>
 </html>

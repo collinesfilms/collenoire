@@ -1,6 +1,8 @@
 /* ─────────────────────────────────────────────────────────────
    Colle Noire — page cartel
-   1. Traductions   2. Lecteur   3. Révélation du texte
+   1. Traductions            4. Révélation du texte
+   2. Blocs défilables       5. Garde-fou du snap
+   3. Lecteur                6. Générique : ouverture animée
    ───────────────────────────────────────────────────────────── */
 
 document.documentElement.classList.add('js');
@@ -100,6 +102,10 @@ function translate(to) {
   syncPlayLabel();
   syncMuteLabel();
 
+  /* Les deux langues n'ont pas la même longueur : ce qui tenait à
+     l'écran en français peut déborder en anglais. */
+  syncPanes();
+
   langBtn.querySelector('.lang__on').textContent  = to.toUpperCase();
   langBtn.querySelector('.lang__off').textContent = to === 'fr' ? 'EN' : 'FR';
   langBtn.setAttribute('aria-label', t.langSwitch);
@@ -107,7 +113,39 @@ function translate(to) {
 
 langBtn.addEventListener('click', () => translate(lang === 'fr' ? 'en' : 'fr'));
 
-/* ── 2. Lecteur ─────────────────────────────────────────────── */
+/* ── 2. Blocs défilables ────────────────────────────────────────
+   Le synopsis et le générique sont plafonnés par le CSS (--pane-max) :
+   sur un écran court ils défilent dans leur cadre plutôt que de pousser
+   la section hors de l'écran. Reste à dire au visiteur qu'il y a
+   quelque chose sous le pli — c'est le rôle du dégradé, qu'on allume
+   tant qu'on n'est pas arrivé en bas.                              */
+
+const panes = document.querySelectorAll('[data-pane]');
+
+function syncPanes() {
+  panes.forEach(p => {
+    const over = p.scrollHeight - p.clientHeight > 1;
+    const more = p.scrollHeight - p.clientHeight - p.scrollTop > 1;
+
+    p.parentElement.classList.toggle('has-more', more);
+
+    /* Un cadre qui défile doit pouvoir se lire au clavier. Chrome le
+       rend focusable de lui-même, pas Firefox ni Safari : on pose le
+       tabindex, et on le retire dès que tout tient — un arrêt de
+       tabulation sur un bloc qui ne défile pas n'aurait rien à offrir. */
+    if (over) p.setAttribute('tabindex', '0');
+    else      p.removeAttribute('tabindex');
+  });
+}
+
+panes.forEach(p => p.addEventListener('scroll', syncPanes, { passive: true }));
+window.addEventListener('resize', syncPanes);
+
+/* Les polices arrivent après le premier calcul : le texte s'allonge
+   sous nos pieds, et un cadre qui tenait à l'écran déborde. */
+if (document.fonts) document.fonts.ready.then(syncPanes);
+
+/* ── 3. Lecteur ─────────────────────────────────────────────── */
 
 const player  = document.getElementById('player');
 const film    = document.getElementById('film');
@@ -234,7 +272,9 @@ player.addEventListener('pointerleave', e => {
 
 /* Clavier */
 document.addEventListener('keydown', e => {
-  if (e.target.matches('input, button, summary')) return;
+  /* [data-pane] : un cadre de texte a le focus, les flèches et la barre
+     d'espace lui appartiennent — c'est avec elles qu'on le fait défiler. */
+  if (e.target.matches('input, button, summary, [data-pane]')) return;
   switch (e.key) {
     case ' ': case 'k': e.preventDefault(); player.classList.contains('is-started') ? (film.paused ? film.play() : film.pause()) : start(); break;
     case 'ArrowLeft':   film.currentTime -= 5; break;
@@ -244,7 +284,7 @@ document.addEventListener('keydown', e => {
   }
 });
 
-/* ── 3. Révélation du texte ─────────────────────────────────── */
+/* ── 4. Révélation du texte ─────────────────────────────────── */
 
 const inner = document.getElementById('contextInner');
 new IntersectionObserver(
@@ -260,44 +300,44 @@ new IntersectionObserver(
   { threshold: [0, 0.5, 1] }
 ).observe(document.getElementById('stage'));
 
-/* ── 4. Garde-fou du snap ───────────────────────────────────── */
+/* ── 5. Garde-fou du snap ───────────────────────────────────── */
 
 const scroller = document.getElementById('scroll');
+const stage    = document.getElementById('stage');
 const context  = document.getElementById('context');
+const credits  = document.querySelector('.credits');
 
 /* Sous « mandatory », le navigateur exige de se poser sur un point
    d'accroche. Une section plus haute que l'écran n'en a qu'un, en haut :
-   son bas devient alors inatteignable. On mesure, et on relâche s'il faut. */
+   son bas devient alors inatteignable. On mesure, et on relâche s'il faut.
+
+   Cette mesure ne peut pas être prise une fois pour toutes au chargement,
+   comme on le faisait : à cet instant les polices ne sont pas encore
+   arrivées, la section est plus courte qu'elle ne le sera, et on concluait
+   qu'elle tenait à l'écran. Le texte s'allongeait ensuite sans que
+   personne ne remesure — sur un écran de 667 px de haut, les dernières
+   lignes du synopsis restaient hors d'atteinte. Un ResizeObserver reprend
+   donc la mesure à chaque changement de hauteur : polices, rotation,
+   ouverture du générique.
+
+   On regarde les deux sections, pas seulement le texte : en paysage,
+   c'est le film qui déborde. */
+
+let holdLoose = false;   // vrai le temps d'une animation du générique
+
 function checkSnap() {
-  scroller.classList.toggle('is-loose', context.scrollHeight > scroller.clientHeight);
+  if (holdLoose) return;
+  const tall = Math.max(stage.scrollHeight, context.scrollHeight) > scroller.clientHeight;
+  scroller.classList.toggle('is-loose', tall);
 }
 
-/* Même mesure, mais après une ouverture ou une fermeture du générique.
-   Repasser en « mandatory » replace le défilement d'autorité : le
-   navigateur saute sans prévenir au point d'accroche le plus proche —
-   c'est de là que venaient les à-coups. On se pose donc nous-mêmes, sans
-   animation, avant de lui rendre la main. */
-function settleSnap() {
-  if (context.scrollHeight > scroller.clientHeight) {
-    scroller.classList.add('is-loose');
-    return;
-  }
-  const top = scroller.scrollTop
-            + context.getBoundingClientRect().top
-            - scroller.getBoundingClientRect().top;
-
-  const behavior = scroller.style.scrollBehavior;
-  scroller.style.scrollBehavior = 'auto';   // sinon le recalage se voit
-  scroller.scrollTop = top;
-  scroller.classList.remove('is-loose');    // déjà posé : plus rien à saisir
-  scroller.style.scrollBehavior = behavior;
-}
-
-const credits = document.querySelector('.credits');
+const snapWatch = new ResizeObserver(checkSnap);
+snapWatch.observe(stage);
+snapWatch.observe(context);
 window.addEventListener('resize', checkSnap);
 checkSnap();
 
-/* ── 5. Générique : ouverture animée ────────────────────────── */
+/* ── 6. Générique : ouverture animée ────────────────────────── */
 
 /* <details> ne s'anime pas tout seul. On prend donc la main sur le clic :
    à l'ouverture on ouvre d'abord pour pouvoir mesurer, à la fermeture on
@@ -335,7 +375,8 @@ credHead.addEventListener('click', e => {
 
   if (calm.matches) {
     rest(!closing);
-    settleSnap();
+    checkSnap();
+    syncPanes();
     return;
   }
 
@@ -350,7 +391,10 @@ credHead.addEventListener('click', e => {
   prose.classList.remove('is-hidden');        // idem : mesurable dans les deux cas
 
   /* Relâché pendant toute l'animation : une accroche obligatoire qui
-     reprend la main en plein vol arrache le défilement. */
+     reprend la main en plein vol arrache le défilement. `holdLoose`
+     empêche le ResizeObserver de la rétablir au premier centimètre
+     d'animation — on ne la rend qu'une fois les hauteurs posées. */
+  holdLoose = true;
   scroller.classList.add('is-loose');
 
   const h  = credBody.scrollHeight || 1;
@@ -390,8 +434,19 @@ credHead.addEventListener('click', e => {
   Promise.all(mine.map(a => a.finished)).then(() => {
     rest(!closing);
     mine.forEach(a => a.cancel());     // le fill rendu, le CSS reprend la main
-    if (credAnim === mine[0]) credAnim = proseAnim = null;
-    settleSnap();
+
+    /* Dernière animation en date : on rend l'accroche. On ne replace plus
+       le défilement à la main — écrire scrollTop pendant qu'on rebascule
+       en « mandatory » laissait la page entre deux points d'accroche, et
+       remonter vers le film ne ramenait plus rien. Les deux blocs étant
+       désormais plafonnés, la section garde sa hauteur d'un bout à
+       l'autre : il n'y a plus rien à replacer. */
+    if (credAnim === mine[0]) {
+      credAnim = proseAnim = null;
+      holdLoose = false;
+      checkSnap();
+    }
+    syncPanes();
   }).catch(() => {});   // annulée : le clic suivant a déjà pris le relais
 });
 
