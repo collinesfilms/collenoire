@@ -20,22 +20,32 @@
   /* Opacité du texte de contexte avant révélation. */
   --veil: 0.16;
 
+  /* Hauteur du logo Dior, et hauteur à laquelle il se pose. */
+  --mark-h: 3rem;
+  --mark-top: clamp(1rem, 3vh, 1.75rem);
+
+  /* Bas de l'en-tête fixe — le dessous du logo. Le PNG porte 15px d'air
+     au-dessus du dessin, que .mark rattrape par une marge négative : on
+     reprend ici le même calcul. Sert à réserver, en haut de la section
+     de texte, la place que l'en-tête occupe déjà. */
+  --head: calc(var(--mark-top) + var(--mark-h) - 15px);
+
+  /* Marge verticale des sections. */
+  --pad-y: clamp(2rem, 6vh, 4rem);
+
   /* Hauteur maximale d'un bloc de texte défilable (le synopsis, le
      générique). Au-delà, le texte défile dans son cadre au lieu de
      pousser la section hors de l'écran — ce qui, sous une accroche
      obligatoire, rendait son bas inatteignable.
 
-     Les 16rem retirés couvrent les marges de la section, l'en-tête du
-     générique, et la hauteur du voile d'en-tête : le bloc étant centré,
-     ce qu'on réserve en haut pour ne pas écrire sous le logo, on le
-     réserve aussi en bas. Descends cette valeur si le texte s'allonge. */
-  --pane-max: calc(100svh - 16rem);
+     Ce qu'on retire : l'en-tête réservé en haut, les deux marges de la
+     section, l'en-tête du générique avec l'air qui l'en sépare, et le
+     pied du générique déplié. Descends cette valeur si le texte
+     s'allonge. */
+  --pane-max: calc(100svh - var(--head) - 13rem);
 
   /* Hauteur du dégradé qui signale qu'il reste du texte à lire. */
   --pane-fade: 3.5rem;
-
-  /* Hauteur du logo Dior. */
-  --mark-h: 3rem;
 
   --ease: cubic-bezier(0.22, 0.61, 0.36, 1);
 }
@@ -77,7 +87,7 @@ body {
   align-items: center;
   justify-content: center;
   position: relative;
-  padding: clamp(2rem, 6vh, 4rem) clamp(1.25rem, 5vw, 3rem);
+  padding: var(--pad-y) clamp(1.25rem, 5vw, 3rem);
 }
 
 /* ── Section 1 ──────────────────────────────────────────────── */
@@ -303,6 +313,12 @@ body {
 
 /* ── Section 2 ──────────────────────────────────────────────── */
 
+/* L'en-tête fixe mange le haut de l'écran. Un bloc centré sur toute la
+   hauteur commençait donc juste sous le logo, pendant que tout l'air se
+   ramassait sous le générique. On réserve l'en-tête en haut : le
+   centrage se fait dans ce qui reste, et les deux marges se valent. */
+.context { padding-top: calc(var(--pad-y) + var(--head)); }
+
 .context__inner {
   width: min(100%, 34rem);
   opacity: var(--veil);
@@ -333,6 +349,11 @@ body {
   scrollbar-width: none;
 }
 .pane::-webkit-scrollbar { display: none; }
+
+/* Sauf en haut de course : là, le cadre n'a plus rien à offrir vers le
+   haut et rend la main à la page, comme le ferait iOS. Posé par app.js,
+   qui suit le défilement du cadre. Le bas, lui, reste retenu. */
+.pane.is-top { overscroll-behavior-y: auto; }
 
 .pane-wrap { position: relative; }
 
@@ -473,7 +494,7 @@ body {
    haut ne se lit plus. Règle --mark-h en haut du fichier. */
 .mark {
   position: fixed;
-  top: clamp(1rem, 3vh, 1.75rem);
+  top: var(--mark-top);
   left: clamp(1rem, 4vw, 1.75rem);
   z-index: 10;
   height: var(--mark-h);
@@ -487,7 +508,7 @@ body {
 
 .lang {
   position: fixed;
-  top: clamp(1rem, 3vh, 1.75rem);
+  top: var(--mark-top);
   right: clamp(1rem, 4vw, 1.75rem);
   z-index: 10;
   display: flex;

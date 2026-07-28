@@ -129,6 +129,15 @@ function syncPanes() {
 
     p.parentElement.classList.toggle('has-more', more);
 
+    /* Geste vers le haut, cadre déjà en haut de course : la page doit
+       reprendre la main, sinon on pousse un texte qui ne bouge plus.
+       Le bas, lui, reste retenu (voir le CSS). Le navigateur lit
+       overscroll-behavior au début du geste, jamais en cours de route :
+       d'où cette classe tenue à jour à chaque défilement — c'est aussi
+       ce qui donne le comportement d'iOS, où il faut relever le doigt
+       entre le texte et la page. */
+    p.classList.toggle('is-top', p.scrollTop <= 1);
+
     /* Un cadre qui défile doit pouvoir se lire au clavier. Chrome le
        rend focusable de lui-même, pas Firefox ni Safari : on pose le
        tabindex, et on le retire dès que tout tient — un arrêt de
@@ -138,7 +147,14 @@ function syncPanes() {
   });
 }
 
-panes.forEach(p => p.addEventListener('scroll', syncPanes, { passive: true }));
+panes.forEach(p => {
+  p.addEventListener('scroll', syncPanes, { passive: true });
+
+  /* Le doigt se pose : on remet l'état d'aplomb avant que le geste ne
+     commence. Un défilement élastique de la page, une ouverture du
+     générique, peuvent avoir bougé le cadre sans qu'il défile. */
+  p.addEventListener('touchstart', syncPanes, { passive: true });
+});
 window.addEventListener('resize', syncPanes);
 
 /* Les polices arrivent après le premier calcul : le texte s'allonge
